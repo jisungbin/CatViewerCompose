@@ -32,7 +32,6 @@ import io.github.jisungbin.catviewercompose.model.Cat
 import io.github.jisungbin.catviewercompose.viewmodel.CatViewModel
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
