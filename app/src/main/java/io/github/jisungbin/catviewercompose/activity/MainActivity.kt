@@ -24,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import io.github.jisungbin.catviewercompose.R
 import io.github.jisungbin.catviewercompose.api.CatClient
@@ -70,6 +71,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalCoilApi::class)
     @Composable
     private fun Content(vm: CatViewModel = viewModel()) {
         Column(
