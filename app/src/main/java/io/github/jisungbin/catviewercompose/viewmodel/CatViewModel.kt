@@ -1,22 +1,66 @@
 package io.github.jisungbin.catviewercompose.viewmodel
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.jisungbin.catviewercompose.api.CatClient
-import io.github.jisungbin.catviewercompose.model.Cat
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.jisungbin.catviewercompose.api.CatResult
+import io.github.jisungbin.catviewercompose.api.CatService
+import io.github.jisungbin.catviewercompose.api.NetworkException
+import io.github.jisungbin.catviewercompose.database.CatDatabase
+import io.github.jisungbin.catviewercompose.database.CatEntity
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import javax.inject.Inject
 
-class CatViewModel : ViewModel() {
-    private val _cat = mutableStateOf<Cat?>(null)
-    val cat: State<Cat?> get() = _cat
+@HiltViewModel
+class CatViewModel @Inject constructor(
+    private val api: CatService,
+    private val database: CatDatabase
+) : ViewModel() {
+    private val _cat = MutableLiveData<CatResult>(CatResult.Loading)
+    val cat: LiveData<CatResult> get() = _cat
 
     init {
-        reloadCat()
+        loadCats(0)
     }
 
-    fun reloadCat() = viewModelScope.launch {
-        _cat.value = CatClient.get.requestNewCat().body()
+    @Suppress("BlockingMethodInNonBlockingContext")
+    fun loadCats(page: Int, limit: Int = 10) = viewModelScope.launch {
+        _cat.postValue(CatResult.Loading)
+        try {
+            val request = api.requestCats(page, limit)
+
+            if (request.isSuccessful && request.body() != null) {
+                _cat.postValue(CatResult.Success(request.body()!!.string().parseCatImages(limit)))
+            } else {
+                _cat.postValue(CatResult.Fail(Exception(request.errorBody()?.string())))
+            }
+        } catch (exception: Exception) {
+            _cat.postValue(CatResult.Fail(NetworkException()))
+        }
+    }
+
+    fun insertAllToDatabase(catImageUrls: List<String>) = viewModelScope.launch {
+        database.dao().insert(CatEntity(imageUrls = catImageUrls))
+    }
+
+    fun loadImageUrlsFromDatabase() = viewModelScope.launch {
+        val catImageUrls = database.dao().getAll().map { it.imageUrls }.flatten()
+        if (catImageUrls.isNotEmpty()) {
+            _cat.postValue(CatResult.Success(catImageUrls))
+        } else {
+            _cat.postValue(CatResult.Fail(Exception("인터넷 연결이 필요합니다.")))
+        }
+    }
+
+    private fun String.parseCatImages(limit: Int): List<String> {
+        val catImageUrls = mutableListOf<String>()
+        val catImages = JSONArray(this)
+        repeat(limit) { index ->
+            catImageUrls.add(catImages.getJSONObject(index).getString("url"))
+        }
+        return catImageUrls
     }
 }

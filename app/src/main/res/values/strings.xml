@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">귀여운 고앙이들 🐈</string>
-    <string name="searching_cats">고양이들 찾는중…</string>
+
+    <string name="dialog_loading_label">고양이들 찾는중…</string>
+    <string name="dialog_error_label">고양이들이 도망갔어요 😿\n\n%s</string>
 </resources>
