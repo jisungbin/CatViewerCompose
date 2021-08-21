@@ -32,7 +32,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.annotation.ExperimentalCoilApi
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
@@ -122,7 +121,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @ExperimentalCoilApi
     @Composable
     private fun Content() {
         LazyColumn(
