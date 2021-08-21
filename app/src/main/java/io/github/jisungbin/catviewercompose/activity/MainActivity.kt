@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun Toolbar() {
         val vm: CatViewModel = viewModel()
+
         TopAppBar(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,6 +76,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun Content() {
         val vm: CatViewModel = viewModel()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
