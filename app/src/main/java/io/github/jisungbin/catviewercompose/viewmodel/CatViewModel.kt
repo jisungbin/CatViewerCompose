@@ -1,7 +1,7 @@
 package io.github.jisungbin.catviewercompose.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,8 +19,8 @@ class CatViewModel @Inject constructor(
     private val api: CatService,
     private val database: CatDatabase
 ) : ViewModel() {
-    private val _cat = MutableLiveData<CatResult>(CatResult.Loading)
-    val cat: LiveData<CatResult> get() = _cat
+    private val _cat = mutableStateOf<CatResult>(CatResult.Loading)
+    val cat: State<CatResult> get() = _cat
 
     init {
         loadCats(0)
@@ -28,17 +28,17 @@ class CatViewModel @Inject constructor(
 
     @Suppress("BlockingMethodInNonBlockingContext")
     fun loadCats(page: Int, limit: Int = 10) = viewModelScope.launch {
-        _cat.postValue(CatResult.Loading)
+        _cat.value = CatResult.Loading
         try {
             val request = api.requestCats(page, limit)
 
             if (request.isSuccessful && request.body() != null) {
-                _cat.postValue(CatResult.Success(request.body()!!.string().parseCatImages(limit)))
+                _cat.value = CatResult.Success(request.body()!!.string().parseCatImages(limit))
             } else {
-                _cat.postValue(CatResult.Fail(Exception(request.errorBody()?.string())))
+                _cat.value = CatResult.Fail(Exception(request.errorBody()?.string()))
             }
         } catch (exception: Exception) {
-            _cat.postValue(CatResult.Fail(NetworkException()))
+            _cat.value = CatResult.Fail(NetworkException())
         }
     }
 
@@ -49,9 +49,9 @@ class CatViewModel @Inject constructor(
     fun loadImageUrlsFromDatabase() = viewModelScope.launch {
         val catImageUrls = database.dao().getAll().map { it.imageUrls }.flatten()
         if (catImageUrls.isNotEmpty()) {
-            _cat.postValue(CatResult.Success(catImageUrls))
+            _cat.value = CatResult.Success(catImageUrls)
         } else {
-            _cat.postValue(CatResult.Fail(Exception("인터넷 연결이 필요합니다.")))
+            _cat.value = CatResult.Fail(Exception("인터넷 연결이 필요합니다."))
         }
     }
 
