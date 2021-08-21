@@ -142,6 +142,9 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun LoadingDialog(visible: MutableState<Boolean>) {
+        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.cat))
+        val progress by animateLottieCompositionAsState(composition)
+
         if (visible.value) {
             AlertDialog(
                 modifier = Modifier.size(250.dp),
@@ -154,8 +157,6 @@ class MainActivity : ComponentActivity() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(text = stringResource(R.string.dialog_loading_label))
-                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.cat))
-                        val progress by animateLottieCompositionAsState(composition)
                         LottieAnimation(
                             modifier = Modifier.size(200.dp),
                             composition = composition,
@@ -170,6 +171,9 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun ErrorDialog(visible: MutableState<Boolean>, exception: State<Exception>) {
+        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.error))
+        val progress by animateLottieCompositionAsState(composition)
+
         if (visible.value) {
             AlertDialog(
                 onDismissRequest = { visible.value = false },
@@ -186,8 +190,6 @@ class MainActivity : ComponentActivity() {
                                 exception.value.message!!
                             )
                         )
-                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.error))
-                        val progress by animateLottieCompositionAsState(composition)
                         LottieAnimation(
                             modifier = Modifier.size(20.dp),
                             composition = composition,
