@@ -7,33 +7,31 @@ import org.json.JSONArray
 
 class CatPagingSource(
     private val api: CatService,
-    private val limit: Int
+    private val limit: Int,
 ) : PagingSource<Int, String>() {
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, String> {
+    override suspend fun load(params: LoadParams<Int>) = try {
         val position = params.key ?: 0
-        return try {
-            val response = api.requestCats(page = position, limit = params.loadSize)
+        val response = api.requestCats(page = position, limit = params.loadSize)
 
-            if (response.isSuccessful && response.body() != null) {
-                val data = response.body()!!.string().parseCatImages(limit)
-                val nextKey = if (data.isEmpty()) {
-                    null
-                } else {
-                    position + (params.loadSize / limit)
-                }
-                LoadResult.Page(
-                    data = data,
-                    prevKey = if (position == 0) null else position - 1,
-                    nextKey = nextKey
-                )
+        if (response.isSuccessful && response.body() != null) {
+            val data = response.body()!!.string().parseCatImages(limit)
+            val nextKey = if (data.isEmpty()) {
+                null
             } else {
-                LoadResult.Error(Exception(response.errorBody()?.string()))
+                position + (params.loadSize / limit)
             }
-        } catch (exception: Exception) {
-            LoadResult.Error(exception)
+            LoadResult.Page(
+                data = data,
+                prevKey = if (position == 0) null else position - 1,
+                nextKey = nextKey
+            )
+        } else {
+            LoadResult.Error(Exception(response.errorBody()?.string()))
         }
+    } catch (exception: Exception) {
+        LoadResult.Error(exception)
     }
 
     override fun getRefreshKey(state: PagingState<Int, String>) =
