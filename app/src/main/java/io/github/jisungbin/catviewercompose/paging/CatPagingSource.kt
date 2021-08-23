@@ -11,34 +11,37 @@ class CatPagingSource(
 ) : PagingSource<Int, String>() {
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun load(params: LoadParams<Int>) = try {
-        val position = params.key ?: 0
-        val response = api.requestCats(page = position, limit = params.loadSize)
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, String> {
+        return try {
+            val position = params.key ?: 0
+            val response = api.requestCats(page = position, limit = params.loadSize)
 
-        if (response.isSuccessful && response.body() != null) {
-            val data = response.body()!!.string().parseCatImages(limit)
-            val nextKey = if (data.isEmpty()) {
-                null
+            if (response.isSuccessful && response.body() != null) {
+                val data = response.body()!!.string().parseCatImages(limit)
+                val nextKey = if (data.isEmpty()) {
+                    null
+                } else {
+                    position + (params.loadSize / limit)
+                }
+                LoadResult.Page(
+                    data = data,
+                    prevKey = if (position == 0) null else position - 1,
+                    nextKey = nextKey
+                )
             } else {
-                position + (params.loadSize / limit)
+                LoadResult.Error(Exception(response.errorBody()?.string()))
             }
-            LoadResult.Page(
-                data = data,
-                prevKey = if (position == 0) null else position - 1,
-                nextKey = nextKey
-            )
-        } else {
-            LoadResult.Error(Exception(response.errorBody()?.string()))
+        } catch (exception: Exception) {
+            LoadResult.Error(exception)
         }
-    } catch (exception: Exception) {
-        LoadResult.Error(exception)
     }
 
-    override fun getRefreshKey(state: PagingState<Int, String>) =
-        state.anchorPosition?.let { anchorPosition ->
+    override fun getRefreshKey(state: PagingState<Int, String>): Int? {
+        return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
-        }
+        } // 다음 키를 만들 수 있는지 체크 -> 이전 키가 있거나, 다음 키가 있어야먄 paging 유지 가능 else return null
+    }
 
     private fun String.parseCatImages(limit: Int): List<String> {
         val catImageUrls = mutableListOf<String>()
