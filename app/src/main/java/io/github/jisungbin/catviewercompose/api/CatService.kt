@@ -12,6 +12,6 @@ interface CatService {
     @GET("/v1/images/search?format=json")
     suspend fun requestCats(
         @Query("page") page: Int,
-        @Query("limit") limit: Int
+        @Query("limit") limit: Int,
     ): Response<ResponseBody>
 }
