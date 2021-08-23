@@ -12,11 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -38,16 +42,24 @@ import io.github.jisungbin.catviewercompose.viewmodel.CatViewModel
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    private val loadingDialogVisible = mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
+            Init()
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 topBar = { Toolbar() },
                 content = { Content() }
             )
         }
+    }
+
+    @Composable
+    private fun Init() {
+        LoadingDialog(visible = loadingDialogVisible)
     }
 
     @Composable
@@ -75,11 +87,11 @@ class MainActivity : ComponentActivity() {
             pagingCatImageUrls.apply {
                 when {
                     loadState.refresh is LoadState.NotLoading && itemCount == 0 -> {
-                        item {
-                            LoadingItem(modifier = Modifier.fillMaxSize())
-                        }
+                        loadingDialogVisible.value = true
                     }
                     else -> {
+                        loadingDialogVisible.value = false
+
                         val errorState = loadState.source.append as? LoadState.Error
                             ?: loadState.source.prepend as? LoadState.Error
                             ?: loadState.append as? LoadState.Error
@@ -100,20 +112,30 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun LoadingItem(modifier: Modifier = Modifier) {
+    private fun LoadingDialog(visible: MutableState<Boolean>) {
         val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.cat))
         val progress by animateLottieCompositionAsState(composition)
 
-        Column(
-            modifier = modifier.padding(16.dp),
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = stringResource(R.string.dialog_loading_label))
-            LottieAnimation(
-                modifier = Modifier.size(150.dp),
-                composition = composition,
-                progress = progress,
+        if (visible.value) {
+            AlertDialog(
+                modifier = Modifier.size(250.dp),
+                onDismissRequest = { visible.value = false },
+                buttons = {},
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.SpaceEvenly,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = stringResource(R.string.dialog_loading_label))
+                        LottieAnimation(
+                            modifier = Modifier.size(200.dp),
+                            composition = composition,
+                            progress = progress,
+                        )
+                    }
+                },
+                shape = RoundedCornerShape(30.dp)
             )
         }
     }
