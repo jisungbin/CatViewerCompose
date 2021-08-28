@@ -40,7 +40,7 @@ class CatPagingSource(
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
-        } // 다음 키를 만들 수 있는지 체크 -> 이전 키가 있거나, 다음 키가 있어야먄 paging 유지 가능 else return null
+        } // 현재 키 가져오기
     }
 
     private fun String.parseCatImages(limit: Int): List<String> {
