@@ -6,11 +6,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 object CatClient {
     const val BaseUrl = "https://cataas.com"
 
-    val get: CatService by lazy {
-        Retrofit.Builder()
-            .baseUrl(BaseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(CatService::class.java)
-    }
+    val get: CatService = Retrofit.Builder()
+        .baseUrl(BaseUrl)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(CatService::class.java)
 }
