@@ -9,6 +9,7 @@ import io.github.jisungbin.catviewercompose.model.Cat
 import kotlinx.coroutines.launch
 
 class CatViewModel : ViewModel() {
+
     private val _cat = mutableStateOf<Cat?>(null)
     val cat: State<Cat?> get() = _cat
 
